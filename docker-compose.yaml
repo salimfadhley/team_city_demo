@@ -24,7 +24,10 @@ services:
 
   agent0:
     <<: *base
-    image: "jetbrains/teamcity-minimal-agent"
+    image: "salimfadhley/teamcity-python-agent:latest"
+    build:
+      context: .
+      target: teamcity-python-agent
     volumes:
       - ./agent_data:/data/teamcity_agent/conf
     environment:
