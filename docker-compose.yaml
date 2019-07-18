@@ -1,0 +1,54 @@
+version: '3.7'
+
+x-base-dev: &base
+  restart: on-failure
+
+x-database: &database
+  POSTGRES_USER: "teamcity"
+  POSTGRES_DB: "teamcity"
+  POSTGRES_PORT: '5432'
+  POSTGRES_PASSWORD: "changeme"
+
+services:
+
+  tc:
+    <<: *base
+    image: "jetbrains/teamcity-server:latest"
+    volumes:
+      - tc_data:/data/teamcity_server/datadir
+      - tc_logs:/opt/teamcity/logs
+    ports:
+      - "8111:8111"
+    networks:
+      - internal
+
+  agent0:
+    <<: *base
+    image: "jetbrains/teamcity-minimal-agent"
+    volumes:
+      - ./agent_data:/data/teamcity_agent/conf
+    environment:
+      SERVER_URL: "http://tc:8111"
+    depends_on:
+      - tc
+    networks:
+      - internal
+
+  db:
+    <<: *base
+    image: postgres:10.9
+    volumes:
+      - "postgres_data:/var/lib/postgresql/data"
+    environment:
+      <<: *database
+    networks:
+      - internal
+
+
+networks:
+  internal:
+
+volumes:
+  postgres_data:
+  tc_data:
+  tc_logs:
